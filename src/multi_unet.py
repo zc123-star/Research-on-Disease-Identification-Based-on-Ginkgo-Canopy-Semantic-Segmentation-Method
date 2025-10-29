@@ -7,45 +7,36 @@ class HaarWaveletDownsampling(nn.Module):
         super(HaarWaveletDownsampling, self).__init__()
         self.in_channels = in_channels
 
-        # 定义 Haar Wavelet 低通滤波器（平均）
         self.register_buffer('low_pass_filter', torch.tensor([[1/2., 1/2.], [1/2., 1/2.]]))
-        # 定义三个方向的高通滤波器
-        self.register_buffer('high_pass_filter_h', torch.tensor([[-1/2., -1/2.], [1/2., 1/2.]]))  # 水平
-        self.register_buffer('high_pass_filter_v', torch.tensor([[-1/2., 1/2.], [-1/2., 1/2.]]))  # 垂直
-        self.register_buffer('high_pass_filter_d', torch.tensor([[1/2., -1/2.], [-1/2., 1/2.]]))  # 对角
+        self.register_buffer('high_pass_filter_h', torch.tensor([[-1/2., -1/2.], [1/2., 1/2.]]))  
+        self.register_buffer('high_pass_filter_v', torch.tensor([[-1/2., 1/2.], [-1/2., 1/2.]]))  
+        self.register_buffer('high_pass_filter_d', torch.tensor([[1/2., -1/2.], [-1/2., 1/2.]]))  
 
-        # 重复滤波器以匹配输入通道数
         self.low_pass_filter = self.low_pass_filter.view(1, 1, 2, 2).repeat(self.in_channels, 1, 1, 1)
         self.high_pass_filter_h = self.high_pass_filter_h.view(1, 1, 2, 2).repeat(self.in_channels, 1, 1, 1)
         self.high_pass_filter_v = self.high_pass_filter_v.view(1, 1, 2, 2).repeat(self.in_channels, 1, 1, 1)
         self.high_pass_filter_d = self.high_pass_filter_d.view(1, 1, 2, 2).repeat(self.in_channels, 1, 1, 1)
 
-        # 定义1x1卷积、批归一化和ReLU序列
         self.conv_bn_relu = nn.Sequential(
-            nn.Conv2d(in_channels*4, in_channels, kernel_size=1, stride=1),  # 注意输入通道数是 in_channels * 4
+            nn.Conv2d(in_channels*4, in_channels, kernel_size=1, stride=1),  
             nn.BatchNorm2d(in_channels),
             nn.ReLU(inplace=True),
         )
 
     def forward(self, x):
         device = x.device
-        # 将滤波器移动到输入数据的设备上
         low_pass_filter = self.low_pass_filter.to(device)
         high_pass_filter_h = self.high_pass_filter_h.to(device)
         high_pass_filter_v = self.high_pass_filter_v.to(device)
         high_pass_filter_d = self.high_pass_filter_d.to(device)
 
-        # 使用低通滤波器获取低频分量
         low_freq = F.conv2d(x, low_pass_filter, stride=2, groups=self.in_channels)
-        # 使用高通滤波器获取三个方向的高频分量
         high_freq_h = F.conv2d(x, high_pass_filter_h, stride=2, groups=self.in_channels)
         high_freq_v = F.conv2d(x, high_pass_filter_v, stride=2, groups=self.in_channels)
         high_freq_d = F.conv2d(x, high_pass_filter_d, stride=2, groups=self.in_channels)
 
-        # 拼接低频和三个方向的高频分量
         concatenated = torch.cat([low_freq, high_freq_h, high_freq_v, high_freq_d], dim=1)
 
-        # 通过1x1卷积降维，使通道数回到原来的大小
         x = self.conv_bn_relu(concatenated)
 
         return x
@@ -169,4 +160,5 @@ class Multi_SE_UNet(nn.Module):
         x = self.up3(x, x2)
         x = self.up4(x, x1)
         logits = self.out_conv(x)
+
         return {"out": logits}
