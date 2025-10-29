@@ -6,7 +6,7 @@ from PIL import Image
 from torchvision import transforms
 import matplotlib.pyplot as plt
 
-from model import AlexNet
+from model import Haar-DiseaseNet
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
@@ -29,8 +29,8 @@ img = torch.unsqueeze(img, dim=0)
 
 # read class_indict
 try:
-    json_file = open('./class_indices.json','r')   ##读取载入刚才保存的json文件，即索引对应的类别名称
-    class_indict = json.load(json_file)        ## 对其进行解码成为我们所需要的字典
+    json_file = open('./class_indices.json','r')   
+    class_indict = json.load(json_file)        
 
 except Exception as e:
     print(e)
@@ -41,8 +41,8 @@ except Exception as e:
 model = AlexNet(num_classes=5)
 
 # load model weights
-model_weights_path = "5class_AlexNet.pth"
-model.load_state_dict(torch.load(model_weights_path))         ##载入我们的网络模型
+model_weights_path = "5class_Haar-DiseaseNet.pth"
+model.load_state_dict(torch.load(model_weights_path))         
 
 model.eval()
 with torch.no_grad():
