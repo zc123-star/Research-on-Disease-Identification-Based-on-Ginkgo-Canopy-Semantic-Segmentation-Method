@@ -14,7 +14,8 @@
   ├── train.py: Training using a single GPU as an example
   ├── train_multi_GPU.py: For users who use multiple GPUs
   ├── predict.py: A simple prediction script that uses trained weights for prediction testing
-  └── compute_mean_std.py: Calculate the mean and standard deviation of each channel in the dataset
+  ├── compute_mean_std.py: Calculate the mean and standard deviation of each channel in the dataset
+  ├── Haar-DiseaseNet: Disease recognition model
 ```
 
 
