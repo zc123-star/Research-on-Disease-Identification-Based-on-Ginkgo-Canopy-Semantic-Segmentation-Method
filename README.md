@@ -1,36 +1,36 @@
 # U-Net(Convolutional Networks for Biomedical Image Segmentation)
 
-## 环境配置：
+## Environment Configuration：
 * Python3.6/3.7/3.8
 * Pytorch1.10
-* Ubuntu或Centos(Windows暂不支持多GPU训练)
-* 最好使用GPU训练
-* 详细环境配置见`requirements.txt`
+* Ubuntu or Centos(Windows does not currently support multi-GPU training)
+* It is best to train using a GPU.
+* For detailed environment setup, see`requirements.txt`
 
-## 文件结构：
+## File Structure：
 ```
-  ├── src: 搭建U-Net模型代码
-  ├── train_utils: 训练、验证以及多GPU训练相关模块
-  ├── my_dataset.py: 自定义dataset用于读取DRIVE数据集(视网膜血管分割)
-  ├── train.py: 以单GPU为例进行训练
-  ├── train_multi_GPU.py: 针对使用多GPU的用户使用
-  ├── predict.py: 简易的预测脚本，使用训练好的权重进行预测测试
-  └── compute_mean_std.py: 统计数据集各通道的均值和标准差
+  ├── src: Code for building a U-Net model
+  ├── train_utils: Modules related to training, validation, and multi-GPU training
+  ├── train.py: Training using a single GPU as an example
+  ├── train_multi_GPU.py: For users who use multiple GPUs
+  ├── predict.py: A simple prediction script that uses trained weights for prediction testing
+  └── compute_mean_std.py: Calculate the mean and standard deviation of each channel in the dataset
 ```
 
 
-## 训练方法
-* 确保提前准备好数据集
-* 若要使用单GPU或者CPU训练，直接使用train.py训练脚本
-* 若要使用多GPU训练，使用`torchrun --nproc_per_node=8 train_multi_GPU.py`指令,`nproc_per_node`参数为使用GPU数量
-* 如果想指定使用哪些GPU设备可在指令前加上`CUDA_VISIBLE_DEVICES=0,3`(例如我只要使用设备中的第1块和第4块GPU设备)
+## Training methods
+* Ensure the dataset is prepared in advance
+* To train using a single GPU or CPU, directly use the train.py training script.
+* To train using multiple GPUs, use the command `torchrun --nproc_per_node=8 train_multi_GPU.py`. The `nproc_per_node` parameter specifies the number of GPUs to use.
+* If you want to specify which GPU devices to use, you can add `CUDA_VISIBLE_DEVICES=0,3` before the command (for example, if I only want to use the first and fourth GPU devices).
 * `CUDA_VISIBLE_DEVICES=0,3 torchrun --nproc_per_node=2 train_multi_GPU.py`
 
-## 注意事项
-* 在使用训练脚本时，注意要将`--data-path`设置为自己存放`DRIVE`文件夹所在的**根目录**
-* 在使用预测脚本时，要将`weights_path`设置为你自己生成的权重路径。
-* 使用validation文件时，注意确保你的验证集或者测试集中必须包含每个类别的目标，并且使用时只需要修改`--num-classes`、`--data-path`和`--weights`即可，其他代码尽量不要改动
+## Precautions
+* When using the training script, be sure to set `--data-path` to the **root directory** where your `DRIVE` folder is stored.
+* When using the prediction script, set `weights_path` to the path of the weights you generated.
+* When using the validation file, make sure that your validation or test set contains at least one example of each class. When using it, you only need to modify `--num-classes`, `--data-path`, and `--weights`; try not to change other parts of the code.
 
-## 注意事项
-* segmentation为分割数据集
-* classification为病害识别数据集
+## Precautions
+* All datasets are in the master branch
+* Segmentation refers to segmenting the dataset.
+* classification is a dataset for disease identification
