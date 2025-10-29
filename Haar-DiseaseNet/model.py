@@ -1,11 +1,9 @@
 import torch.nn as nn
 import torch
 
-
 class AlexNet(nn.Module):
     def __init__(self, num_classes=5, init_weights=False):
         super(AlexNet, self).__init__()
-        ### nn.Sequential 此函数能将一系列网络层打包成为一个结构
         self.features = nn.Sequential(
             nn.Conv2d(3, 48, kernel_size=11, stride=4, padding=2),  # input[3, 224, 224]  output[48, 55, 55]
             nn.ReLU(inplace=False),
@@ -21,7 +19,6 @@ class AlexNet(nn.Module):
             nn.ReLU(inplace=False),
             nn.MaxPool2d(kernel_size=3, stride=2),                  # output[128, 6, 6]
         )
-        ##这下面同理一样的，只不过这下面都是全连接层
         self.classifier = nn.Sequential(
             nn.Dropout(p=0.6),
             nn.Linear(128 * 6 * 6, 2048),
