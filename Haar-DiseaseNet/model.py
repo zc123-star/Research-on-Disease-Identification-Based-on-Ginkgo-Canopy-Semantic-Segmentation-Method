@@ -1,7 +1,7 @@
 import torch.nn as nn
 import torch
 
-class AlexNet(nn.Module):
+class Haar-DiseaseNet(nn.Module):
     def __init__(self, num_classes=5, init_weights=False):
         super(AlexNet, self).__init__()
         self.features = nn.Sequential(
