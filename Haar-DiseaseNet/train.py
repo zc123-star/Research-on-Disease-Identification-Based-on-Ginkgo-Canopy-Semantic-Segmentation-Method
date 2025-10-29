@@ -11,7 +11,7 @@ import torch.optim as optim
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import time
-from model import AlexNet
+from model import Haar-DiseaseNet
 import numpy as np
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
