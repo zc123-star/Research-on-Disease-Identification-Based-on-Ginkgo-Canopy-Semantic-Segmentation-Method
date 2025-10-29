@@ -29,8 +29,6 @@
 * When using the training script, be sure to set `--data-path` to the **root directory** where your `DRIVE` folder is stored.
 * When using the prediction script, set `weights_path` to the path of the weights you generated.
 * When using the validation file, make sure that your validation or test set contains at least one example of each class. When using it, you only need to modify `--num-classes`, `--data-path`, and `--weights`; try not to change other parts of the code.
-
-## Precautions
 * All datasets are in the master branch
 * Segmentation refers to segmenting the dataset.
 * classification is a dataset for disease identification
