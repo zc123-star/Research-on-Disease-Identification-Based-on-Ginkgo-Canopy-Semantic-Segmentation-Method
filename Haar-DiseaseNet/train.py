@@ -26,10 +26,9 @@ data_transform = {
                                    transforms.ToTensor(),
                                    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])}
 
-data_root = os.path.abspath(os.path.join(os.getcwd(), "../.."))  # 获取图像的路径
-image_path = data_root + "/data_set/flower_data/"  # flower data set path ## 获取图像路径
+data_root = os.path.abspath(os.path.join(os.getcwd(), "../.."))  
+image_path = data_root + "/data_set/flower_data/"  
 
-#导入训练集
 train_dataset = datasets.ImageFolder(root=os.path.join(image_path+ "train"), transform=data_transform["train"])
 train_num = len(train_dataset)
 
@@ -37,14 +36,12 @@ batch_size = 16
 train_loader = torch.utils.data.DataLoader(train_dataset,
                                            batch_size=batch_size, shuffle=True,
                                            num_workers=0)
-#导入验证集
 validate_dataset = datasets.ImageFolder(root=os.path.join(image_path+ "val"),  transform=data_transform["val"])
 val_num = len(validate_dataset)
 validate_loader = torch.utils.data.DataLoader(validate_dataset,
                                                 batch_size=batch_size, shuffle=True,
                                                 num_workers=0)
 
-#转换分类的字典的键的顺序
 flower_list = train_dataset.class_to_idx
 sorted_flower_list = dict(sorted(flower_list.items(), key=lambda item: item[1]))
 cla_dict = dict((val, key) for key, val in flower_list.items())
@@ -55,28 +52,26 @@ with open('class_indices.json', 'w') as json_file:
 
     # test_data_iter = iter(validate_loader)
     # test_image, test_label = test_data_iter.next()
-#开始训练
 model_name = "AlexNet"
 net = AlexNet( num_classes=5, init_weights=True)
 model = net.to(device)
 loss_function = nn.CrossEntropyLoss()
 optimizer = optim.Adam(net.parameters(), lr=0.0001)
 
-#定义训练
 def train_model(model, device, train_loader,optimizer, epoch):
     train_loss = 0
     Best_acc = 0
     Correct = 0
     model.train()
 
-    for step, data in enumerate(train_loader, start=0):  ##遍历训练集，step从0 开始计算
-        images, labels = data  ##获取训练集的图像和标签
-        optimizer.zero_grad()  ##清除历史梯度
+    for step, data in enumerate(train_loader, start=0):  
+        images, labels = data  
+        optimizer.zero_grad()  
         time_start = time.perf_counter()
-        outputs = model(images.to(device))  ##正向传播
+        outputs = model(images.to(device))  
         pre_y = torch.max(outputs, dim=1)[1]
         Correct += (pre_y == labels.to(device)).sum().item()
-        loss = loss_function(outputs, labels.to(device))  ##计算损失
+        loss = loss_function(outputs, labels.to(device))  
         loss.backward()
         optimizer.step()
 
@@ -93,28 +88,28 @@ def train_model(model, device, train_loader,optimizer, epoch):
     return train_loss, Acc
 
 
-save_path = './5class_AlexNet.pth'#保存训练权重路径
+save_path = './5class_AlexNet.pth'
 
 
 
-##定义测试方法
+
 def test_model(model,device,validate_loader):
     model.eval()
     correct = 0
-    best_acc = 0#最优准确率
-    test_loss =0#测试损失
-    with torch.no_grad():#不更新历史梯度 参数进行更新，防止计算过大
-        for val_data in validate_loader:#遍历验证集
-            val_images, val_labels = val_data#划分验证集  图片  标签
+    best_acc = 0
+    test_loss =0
+    with torch.no_grad():
+        for val_data in validate_loader:
+            val_images, val_labels = val_data
             val_images, val_labels = val_images.to(device), val_labels.to(device)
             outputs = model(val_images.to(device))
-            test_loss += loss_function(outputs, val_labels).item()#计算验证集的损失，用于后续评估
-            predict_y = torch.max(outputs, dim=1)[1]  #预测和标签进行对比 以output中值最大位置对应的索引（标签）作为预测输出
+            test_loss += loss_function(outputs, val_labels).item()
+            predict_y = torch.max(outputs, dim=1)[1]  
             #print(val_labels)
             #print(predict_y)
-            correct += (predict_y == val_labels.to(device)).sum().item()#累计验证集中，预测正确样本个数
+            correct += (predict_y == val_labels.to(device)).sum().item()
 
-        val_accurate = correct / val_num#预测正确个数/样本总数=测试集准确率
+        val_accurate = correct / val_num
 
         if val_accurate > best_acc:
              best_acc = val_accurate
@@ -153,19 +148,12 @@ for iii in range(len(list)):
         min_index = iii
 
 minloss = min_num
-print('model%s' % min_index)
-print('验证集最高准确率')
-print('{}%'.format(Valid_Accuracy_list[min_index]))
-
 model.eval()
 
 accuracy = test_model(model, device, validate_loader)
-print('测试集准确率')
-print('{}%'.format(accuracy[1]))
 
-#绘图定义
-plt.rcParams['font.sans-serif'] = ['SimHei']       ##显示中文标签
-plt.rcParams['axes.unicode_minus'] = False          ##这两行需要手动设置
+plt.rcParams['font.sans-serif'] = ['SimHei']       
+plt.rcParams['axes.unicode_minus'] = False          
 x1 = range(0, 150)
 y1 = Train_loss_list
 y3 = Valid_Accuracy_list
@@ -174,33 +162,6 @@ y4 = Train_Acc_list
 
 #保存数据
 pdata = pd.DataFrame({'number': x1, 'Train_loss': y1, 'Valid_loss': y2,'Valid_Acc':y3, 'Train_Acc': y4})
-pdata.to_excel('./150epoch_AlexNet.xlsx', index=True, float_format='%.4f')
-df1 = pd.read_excel('./150epoch_AlexNet.xlsx')
-# #绘图
-# plt.subplot(411)
-# plt.legend('Train_Loss')
-# plt.plot(x1, y1, 'red', label="Train_Loss")
-# plt.legend(loc = 'best')
-# #plt.xlabel('轮数')
-# plt.ylabel('训练集损失')
-#
-# plt.subplot(412)
-# plt.legend('Val_Loss')
-# plt.plot(x1, y2, 'yellow', label="Val_Loss")
-# plt.legend(loc = 'best')
-# # plt.xlabel('轮数')
-# plt.ylabel('验证集损失')
-#
-# plt.subplot(413)
-# plt.plot(x1, y4, 'cyan', label="Train_Acc")
-# plt.legend(loc = 'best')
-# # plt.xlabel('轮数')
-# plt.ylabel('训练集准确率')
-#
-# plt.subplot(414)
-# plt.plot(x1, y3, 'blue', label="Valid_Acc")
-# plt.legend(loc = 'best')
-# plt.xlabel('轮数')
-# plt.ylabel('验证集准确率')
+pdata.to_excel('./150epoch_Haar-DiseaseNet.xlsx', index=True, float_format='%.4f')
+df1 = pd.read_excel('./150epoch_Haar-DiseaseNet.xlsx')
 
-plt.show()
