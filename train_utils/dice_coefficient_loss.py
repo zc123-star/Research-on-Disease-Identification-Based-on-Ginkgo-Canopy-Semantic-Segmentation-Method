@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 
-def build_target(target: torch.Tensor, num_classes: int = 2, ignore_index: int = -100):#这个函数的作用是将输入的目标张量处理成适合用于计算Dice系数的形式，并返回处理后的目标张量。
+def build_target(target: torch.Tensor, num_classes: int = 2, ignore_index: int = -100):
     """build target for dice coefficient"""
     dice_target = target.clone()
     if ignore_index >= 0:
@@ -18,14 +18,13 @@ def build_target(target: torch.Tensor, num_classes: int = 2, ignore_index: int =
 
 
 def dice_coeff(x: torch.Tensor, target: torch.Tensor, ignore_index: int = -100, epsilon=1e-6):
-    # Average of Dice coefficient for all batches, or for a single mask 这个函数的目的是评估模型的预测结果与真实标签之间的相似度，Dice 系数越接近 1，表示模型预测的结果与真实标签越相似。
+    # Average of Dice coefficient for all batches, or for a single mask 
     d = 0.
     batch_size = x.shape[0]
     for i in range(batch_size):
         x_i = x[i].reshape(-1)
         t_i = target[i].reshape(-1)
         if ignore_index >= 0:
-            # 找出mask中不为ignore_index的区域
             roi_mask = torch.ne(t_i, ignore_index)
             x_i = x_i[roi_mask]
             t_i = t_i[roi_mask]
