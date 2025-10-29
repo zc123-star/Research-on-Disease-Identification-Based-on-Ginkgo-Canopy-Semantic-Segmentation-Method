@@ -2,12 +2,12 @@ import os
 import time
 import datetime
 import torch
-from src import UNet
+from src import multi_unet
 from train_utils import train_one_epoch, evaluate, create_lr_scheduler
 from my_dataset import DriveDataset
 import transforms as T
 
-class SegmentationPresetTrain:#训练数据集预处理这个类 包括基础大小、裁剪大小、翻转概率、均值、标准差
+class SegmentationPresetTrain:#This class for training dataset preprocessing includes base size, crop size, flip probability, mean, and standard deviation.
     def __init__(self, base_size, crop_size, hflip_prob=0.5, vflip_prob=0.5,
                  mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
         min_size = int(0.5 * base_size)
@@ -29,7 +29,7 @@ class SegmentationPresetTrain:#训练数据集预处理这个类 包括基础大
         return self.transforms(img, target)
 
 
-class SegmentationPresetEval:#定义一个评估数据集预处理类
+class SegmentationPresetEval:#Define a data preprocessing class for evaluation datasets
     def __init__(self, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
         self.transforms = T.Compose([
             T.ToTensor(),
@@ -40,7 +40,7 @@ class SegmentationPresetEval:#定义一个评估数据集预处理类
         return self.transforms(img, target)
 
 
-def get_transform(train, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):#定义了一个函数 get_transform，它返回相应的数据预处理类对象。
+def get_transform(train, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):#A function get_transform is defined, which returns the corresponding data preprocessing class object.
     base_size = 565
     crop_size = 480
 
@@ -50,14 +50,14 @@ def get_transform(train, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
         return SegmentationPresetEval(mean=mean, std=std)
 
 
-def create_model(num_classes):#创建模型
+def create_model(num_classes):#Create Model
     model = UNet(in_channels=3, num_classes=num_classes)
     #model = VGG16UNet(num_classes=num_classes)
     ##model = Multi_UNet(num_classes=num_classes)
     return model
 
 
-def main(args):#定义主要的训练函数。加载数据、模型、优化器等，然后进行训练循环。
+def main(args):#Define the main training function. Load the data, model, optimizer, etc., and then proceed with the training loop.
     device = torch.device(args.device if torch.cuda.is_available() else "cpu")
 
     batch_size = args.batch_size
@@ -68,7 +68,7 @@ def main(args):#定义主要的训练函数。加载数据、模型、优化器�
     mean = (0.709, 0.381, 0.224)
     std = (0.127, 0.079, 0.043)
 
-    # 用来保存训练以及验证过程中信息
+    # Used to save information during training and validation
     results_file = "haar_UNet_results{}.txt".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 
     train_dataset = DriveDataset(args.data_path,
@@ -88,7 +88,7 @@ def main(args):#定义主要的训练函数。加载数据、模型、优化器�
                                                collate_fn=train_dataset.collate_fn)
 
     val_loader = torch.utils.data.DataLoader(val_dataset,
-                                             batch_size=4,#经过后需修改，原来是1
+                                             batch_size=4,
                                              num_workers=num_workers,
                                              pin_memory=True,
                                              collate_fn=val_dataset.collate_fn)
@@ -105,7 +105,7 @@ def main(args):#定义主要的训练函数。加载数据、模型、优化器�
 
     scaler = torch.cuda.amp.GradScaler() if args.amp else None
 
-    # 创建学习率更新策略，这里是每个step更新一次(不是每个epoch)
+    # Create a learning rate update strategy, here it is updated every step (not every epoch)
     lr_scheduler = create_lr_scheduler(optimizer, len(train_loader), args.epochs, warmup=True)
 
     if args.resume:
@@ -130,7 +130,7 @@ def main(args):#定义主要的训练函数。加载数据、模型、优化器�
         print(f"dice coefficient: {dice:.3f}")
         # write into txt
         with open(results_file, "a") as f:
-            # 记录每个epoch对应的train_loss、lr以及验证集各指标
+            # Record the train_loss, learning rate (lr), and various metrics on the validation set for each epoch.
             train_info = f"[epoch: {epoch}]\n" \
                          f"train_loss: {mean_loss:.4f}\n" \
                          f"lr: {lr:.6f}\n" \
@@ -187,7 +187,7 @@ def parse_args():
     # Mixed precision training parameters
     parser.add_argument("--amp", default=False, type=bool,
                         help="Use torch.cuda.amp for mixed precision training")
-    #后加上去的减少原像素过大产生过曝
+    #Adding it afterward reduces the original pixels too much, causing overexposure.
     args = parser.parse_args()
 
     return args
