@@ -4,15 +4,15 @@ import numpy as np
 from torch.utils.data import Dataset
 
 
-class DriveDataset(Dataset):#定义数据集根目录
+class DriveDataset(Dataset):
     def __init__(self, root: str, train: bool, transforms=None):
         super(DriveDataset, self).__init__()
         self.flag = "training" if train else "test"
-        data_root = os.path.join(root, "DRIVE", self.flag)#此处可要可不要
-        assert os.path.exists(data_root), f"path '{data_root}' does not exists."#判断会不会报错
+        data_root = os.path.join(root, "DRIVE", self.flag)
+        assert os.path.exists(data_root), f"path '{data_root}' does not exists."
         self.transforms = transforms
-        img_names = [i for i in os.listdir(os.path.join(data_root, "images")) if i.endswith(".JPG")]#遍历images目录并得到每张图片的名称 改文件格式根据原图像格式
-        self.img_list = [os.path.join(data_root, "images", i) for i in img_names]#每张图片对应的路径
+        img_names = [i for i in os.listdir(os.path.join(data_root, "images")) if i.endswith(".JPG")]
+        self.img_list = [os.path.join(data_root, "images", i) for i in img_names]
         self.manual = [os.path.join(data_root, "1st_manual", i.split("_")[0] + "_t.png")
         #self.manual = [os.path.join(data_root, "1st_manual", i.split("_")[0] + "_manual1.gif")
                        for i in img_names]
@@ -21,7 +21,7 @@ class DriveDataset(Dataset):#定义数据集根目录
             if os.path.exists(i) is False:
                 raise FileNotFoundError(f"file {i} does not exists.")
 
-    #    self.roi_mask = [os.path.join(data_root, "mask", i.split("_")[0] + f"_{self.flag}_mask.gif")此处不需要有这个蒙图
+    #    self.roi_mask = [os.path.join(data_root, "mask", i.split("_")[0] + f"_{self.flag}_mask.gif")
     #                     for i in img_names]
         # check files
     #    for i in self.roi_mask:
@@ -35,7 +35,6 @@ class DriveDataset(Dataset):#定义数据集根目录
         #roi_mask = 255 - np.array(roi_mask)
         mask = np.clip(manual, a_min=0, a_max=255)
 
-        # 这里转回PIL的原因是，transforms中是对PIL数据进行处理
         mask = Image.fromarray(mask)
 
         if self.transforms is not None:
