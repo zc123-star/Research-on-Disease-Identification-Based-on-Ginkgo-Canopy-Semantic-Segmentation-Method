@@ -133,7 +133,6 @@ class GradCAM:
         if self.cuda:
             input_tensor = input_tensor.cuda()
 
-        # 正向传播得到网络输出logits(未经过softmax)
         output = self.activations_and_grads(input_tensor)
         if isinstance(target_category, int):
             target_category = [target_category] * input_tensor.size(0)
@@ -228,3 +227,4 @@ def center_crop_img(img: np.ndarray, size: int):
         img = img[:, w: w+size]
 
     return img
+
