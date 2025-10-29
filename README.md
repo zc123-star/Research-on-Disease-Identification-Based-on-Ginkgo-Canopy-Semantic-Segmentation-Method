@@ -1,4 +1,4 @@
-# U-Net(Convolutional Networks for Biomedical Image Segmentation)
+# Haar-UNet、Haar-DiseaseNet(Convolutional Networks for Biomedical Image Segmentation and classification)
 
 ## Environment Configuration：
 * Python3.6/3.7/3.8
